@@ -30,16 +30,16 @@
     ;
     ; Note: Delete the last line (["e"]), or set value to 0, if you don't use a buff skill
     ;----------------------------------------------------------------------
-    FlaskDurationInit[1] := 6000
-    FlaskDurationInit[2] := 8000
+    FlaskDurationInit[1] := 8000
+    FlaskDurationInit[2] := 0
     FlaskDurationInit[3] := 0
     FlaskDurationInit[4] := 0
     FlaskDurationInit[5] := 0
     FlaskDurationInit["e"] := 0		; I use Steelskin here
     FlaskDurationInit["r"] := 0		; I use Molten Shell here
     FlaskDurationInit[","] := 0		; Segunda Barra
-    FlaskDurationInit["x"] := 0		; Segunda Barra
-    FlaskDurationInit["."] := 10000		; Segunda Barra
+    FlaskDurationInit["x"] := 0		    ; Segunda Barra
+    FlaskDurationInit["."] := 2000		; Segunda Barra
     FlaskDurationInit["{Numpad2}"] := 0 ; Segunda Barra
     FlaskDurationInit["{Numpad1}"] := 0	; Segunda Barra
     FlaskDurationInit["{LButton}"] := 0	; Segunda Barra
@@ -70,7 +70,7 @@
     ;----------------------------------------------------------------------
     ;column 1 = 915
     ;column 2 = 953
-    ix := 913
+    ix := 915
     iy := 435
     delta := 38
 
@@ -108,7 +108,7 @@
     ; usage is enabled via hotkey (default is F12), and we've attacked
     ; within the last 0.5 second (or are channeling/continuous attacking.
     ;----------------------------------------------------------------------
-    Loop {
+    loop {
         if (UseFlasks) {
             ; have we attacked in the last 0.5 seconds?
             if ((A_TickCount - LastRightClick) < 500) {
@@ -153,16 +153,16 @@
     ; 2nd is release of button}
     ;----------------------------------------------------------------------
     ~f::
-       ; pass-thru and capture when the last attack (Right click) was done
+        ; pass-thru and capture when the last attack (Right click) was done
         ; we also track if the mouse button is being held down for continuous attack(s) and/or channelling skills
         HoldRightClick := true
         LastRightClick := A_TickCount
     return
 
     ~f up::
-      ; pass-thru and release the right mouse button
-      HoldRightClick := false
-      return
+        ; pass-thru and release the right mouse button
+        HoldRightClick := false
+    return
 
     ~w::
         ; pass-thru and capture when the last attack (Right click) was done
@@ -170,7 +170,7 @@
         HoldRightClick := true
         LastRightClick := A_TickCount
     return
-      
+
     ~w up::
         ; pass-thru and release the right mouse button
         HoldRightClick := false
@@ -275,9 +275,9 @@
     ;----------------------------------------------------------------------
     ;!c::
     Numpad7::
-        Loop, 11 {
+        loop, 11 {
             col := ix + (A_Index - 1) * delta
-            Loop, 5 {
+            loop, 5 {
                 row := iy + (A_Index - 1) * delta
                 Send, ^{ Click, %col%, %row% }
             }
@@ -311,8 +311,8 @@
         Gui, Submit ; Save each control's contents to its associated variable.
         MouseGetPos, x, y			; start from current mouse pos
         ClickCt := 0
-        Loop {
-            Send ^ { Click, %x%, %y% }
+        loop {
+            Send ^{ Click, %x%, %y% }
             if (++ClickCt > StashSize[SelStash] - StartRow) {
                 StartRow := 1
                 x := x + StashD[SelStash]
@@ -359,7 +359,7 @@
         Send i
         Sleep %SleepSwapWeapon%
         MouseMove, x, y
-    Return
+    return
 
     ;----------------------------------------------------------------------
     ; Numpad1 to Ctrl-Click every 100ms.
@@ -372,8 +372,8 @@
     return
 
     ClickLoopCTRLandLEFT:
-        Send, ^{LButton}
-    Return
+        Send, ^{ LButton }
+    return
 
     ;----------------------------------------------------------------------
     ; Numpad1 to Ctrl-RIGHTClick every 100ms.
@@ -386,9 +386,8 @@
     return
 
     ClickLoopCTRLandRIGHT:
-        Send, ^{RButton}
-    Return
-
+        Send, ^{ RButton }
+    return
 
     ;----------------------------------------------------------------------
     ; Numpad3 to Shift-Click every 100ms.
@@ -401,14 +400,14 @@
     return
 
     ClickLoopSHIFT:
-        Send, +{LButton}
-    Return
+        Send, +^{ LButton }
+    return
 
     ;----------------------------------------------------------------------
     ; MINE REDUX
     ;----------------------------------------------------------------------
 
-    Numpad6:: ; Deactivate the loop when Numpad6 is pressed
+    Numpad9:: ; Deactivate the loop when Numpad6 is pressed
         loopcontrol := not loopcontrol
         if not loopcontrol {
             ToolTip, Mine: Inactive
@@ -419,18 +418,17 @@
     return
 
     SendSpaceLoop:
-        if loopcontrol && not loopstopper
-        {
+        if loopcontrol && not loopstopper {
             Random, VariableDelay, 0, 30
             Sleep, %VariableDelay%
-            Send, {SPACE}
+            Send, { SPACE }
         }
     return
 
     SendFinishSpaceLoopTime:
         Random, VariableDelay, 0, 30
         Sleep, %VariableDelay%
-        Send, {SPACE}
+        Send, { SPACE }
         if (A_TickCount - spaceStartTime >= 2000) ; 2000 milliseconds (2 seconds)
             SetTimer, SendFinishSpaceLoopTime, Off
     return
@@ -438,7 +436,7 @@
     ~t:: ; Start the loop when F is held down
         if loopcontrol {
             loopstopper := false
-            Send, {SPACE}
+            Send, { SPACE }
             SetTimer, SendSpaceLoop, 15
         }
     return
@@ -458,21 +456,21 @@
 
     F5:: Suspend
 
-    ;----------------------------------------------------------------------
-    ; Smoke Mine REDUX
-    ;----------------------------------------------------------------------
+;----------------------------------------------------------------------
+; Smoke Mine REDUX
+;----------------------------------------------------------------------
 
-    ;~t::SmokeMine() ;
+;~t::SmokeMine() ;
 
-    ;SmokeMine(){
-    ;if WinActive("Path of Exile")
-    ;		{
-    ;		Sleep 200
-    ;		Send, {space}
-    ;		Sleep 100
-    ;		Send, {space}
-    ;		Sleep 100
-    ;		Send, {space}
-    ;		return
-    ;		}
-    ;}
+;SmokeMine(){
+;if WinActive("Path of Exile")
+;		{
+;		Sleep 200
+;		Send, {space}
+;		Sleep 100
+;		Send, {space}
+;		Sleep 100
+;		Send, {space}
+;		return
+;		}
+;}
