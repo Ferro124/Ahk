@@ -5,21 +5,24 @@ SetWorkingDir %A_ScriptDir%
 Suspend, Off
 
 ifWinActive World of Warcraft
-{
+{  
 
-  ; Common function to handle key presses
+;=========================================
+; Common function to handle key presses  
+;=========================================
   PressKey(key) {
     Loop
     {
       if not GetKeyState(key, "P")
         break
       Send %key%
-      RandSleep(50, 80)
+      RandSleep(70, 90)
     }
     return
-  }
-  
-  ; Key bindings
+  }  
+;=========================================
+; Key bindings
+;=========================================
   $f::PressKey("f")
   $q::PressKey("q")
   $e::PressKey("e")
@@ -33,18 +36,19 @@ ifWinActive World of Warcraft
   $6::PressKey("6")
   $t::PressKey("t")
   $v::PressKey("v")
- ; $'::PressKey("'")		  
+ ;$'::PressKey("'")		    
+ 
 
-  RandSleep(x, y) {
+ RandSleep(x, y) {
     Random, rand, %x%, %y%
     Sleep %rand%
   }
 }
 
 #IfWinActive  ; Reset context to global
-
 InitialStateSuspension:=0
-F8::
+
+*F8::
   Suspend, Toggle
   if(A_IsSuspended && InitialStateSuspension=0){
     Suspend,Off
@@ -53,6 +57,7 @@ F8::
   ToolTip, % (A_IsSuspended ? "SUSPENDED" : "ACTIVE"), , , 1
   SetTimer, RemoveToolTip, -200  ; Remove after 0.2 seconds
 return
+
 
 ; Remove tooltip
 RemoveToolTip:
