@@ -14,6 +14,10 @@
 ; Alt+g - Get the current screen coordinates of the mouse pointer.
 ; Alt+s - Swap a skill gem with an alternate.
 ;----------------------------------------------------------------------
+
+#MaxHotkeysPerInterval 200
+#HotkeyInterval 2000
+
 #IfWinActive Path of Exile
     #SingleInstance force
     #NoEnv
@@ -30,16 +34,16 @@
     ;
     ; Note: Delete the last line (["e"]), or set value to 0, if you don't use a buff skill
     ;----------------------------------------------------------------------
-    FlaskDurationInit[1] := 8000
+    FlaskDurationInit[1] := 6000
     FlaskDurationInit[2] := 0
-    FlaskDurationInit[3] := 0
+    FlaskDurationInit[3] := 6000
     FlaskDurationInit[4] := 0
     FlaskDurationInit[5] := 0
-    FlaskDurationInit["e"] := 0		; I use Steelskin here
-    FlaskDurationInit["r"] := 0		; I use Molten Shell here
-    FlaskDurationInit[","] := 0		; Segunda Barra
+    FlaskDurationInit["e"] := 0			; I use Steelskin here
+    FlaskDurationInit["r"] := 0			; I use Molten Shell here
     FlaskDurationInit["x"] := 0		    ; Segunda Barra
-    FlaskDurationInit["."] := 2000		; Segunda Barra
+	FlaskDurationInit[","] := 12000			; Segunda Barra
+    FlaskDurationInit["."] := 4500		; Segunda Barra
     FlaskDurationInit["{Numpad2}"] := 0 ; Segunda Barra
     FlaskDurationInit["{Numpad1}"] := 0	; Segunda Barra
     FlaskDurationInit["{LButton}"] := 0	; Segunda Barra
@@ -52,6 +56,8 @@
 
     loopstopper := true ; Initialize loopstopper to 1
     loopcontrol := false ; Initialize loopcontrol to 1
+	weaponSwapControl := false ;Initialize Weapon Swap Variable deactivated
+	weaponSwapRunning := false ;weapon swap stopper variable
 
     ;----------------------------------------------------------------------
     ; The following are used for fast ctrl-click from the Inventory screen
@@ -120,6 +126,7 @@
                 }
             }
         }
+		Sleep, 50
     }
     Enter::
         UseFlasks := not UseFlasks
@@ -152,26 +159,20 @@
     ; Make the change in both places, below (the first is click,
     ; 2nd is release of button}
     ;----------------------------------------------------------------------
-    ~f::
+	*~q::
+	*~w::
+	*~RButton::
+    *~f::
         ; pass-thru and capture when the last attack (Right click) was done
         ; we also track if the mouse button is being held down for continuous attack(s) and/or channelling skills
         HoldRightClick := true
         LastRightClick := A_TickCount
     return
 
-    ~f up::
-        ; pass-thru and release the right mouse button
-        HoldRightClick := false
-    return
-
-    ~w::
-        ; pass-thru and capture when the last attack (Right click) was done
-        ; we also track if the mouse button is being held down for continuous attack(s) and/or channelling skills
-        HoldRightClick := true
-        LastRightClick := A_TickCount
-    return
-
-    ~w up::
+	*~q up::
+	*~w up::
+	*~RButton up::
+    *~f up::
         ; pass-thru and release the right mouse button
         HoldRightClick := false
     return
@@ -216,17 +217,17 @@
     return
 
     ~r::
-        ; pass-thru and start timer for flask 5
+        ; pass-thru and start timer for R
         FlaskLastUsed["r"] := A_TickCount
         Random, VariableDelay, -99, 99
-        FlaskDuration[5] := FlaskDurationInit[5] + VariableDelay ; randomize duration to simulate human
+        FlaskDuration[r] := FlaskDurationInit["r"] + VariableDelay ; randomize duration to simulate human
     return
 
     ~e::
-        ; pass-thru and start timer for flask 5
+        ; pass-thru and start timer for E
         FlaskLastUsed["e"] := A_TickCount
         Random, VariableDelay, -99, 99
-        FlaskDuration[5] := FlaskDurationInit[5] + VariableDelay ; randomize duration to simulate human
+        FlaskDuration[e] := FlaskDurationInit["e"] + VariableDelay ; randomize duration to simulate human
     return
 
     ;----------------------------------------------------------------------
@@ -235,25 +236,33 @@
     ;----------------------------------------------------------------------
     [::
         if UseFlasks {
-            Send 1
+            SendInput, {Blind}1
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send 2
+			
+            SendInput, {Blind}2
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send 3
+			
+            SendInput, {Blind}3
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send 4
+			
+            SendInput, {Blind}4
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send 5
+			
+            SendInput, {Blind}5
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send e
+			
+            SendInput, {Blind}e
             Random, VariableDelay, -99, 99
             Sleep, %VariableDelay%
-            Send r
+			
+            SendInput, {Blind}r
+			Random, VariableDelay, -99, 99
+            Sleep, %VariableDelay%
         }
     return
 
@@ -261,7 +270,9 @@
         for flask, duration in FlaskDuration {
             ; skip flasks with 0 duration and skip flasks that are still active
             if ((duration > 0) & (duration < A_TickCount - FlaskLastUsed[flask])) {
-                Send %flask%
+			 ControlSend,, %flask%, Path of Exile
+                ;SendInput, {Blind}%flask%
+				
                 FlaskLastUsed[flask] := A_TickCount
                 Random, VariableDelay, -99, 99
                 FlaskDuration[flask] := FlaskDurationInit[flask] + VariableDelay ; randomize duration to simulate human
@@ -372,7 +383,7 @@
     return
 
     ClickLoopCTRLandLEFT:
-        Send, ^{ LButton }
+        Send, ^{ Click Left }
     return
 
     ;----------------------------------------------------------------------
@@ -386,7 +397,7 @@
     return
 
     ClickLoopCTRLandRIGHT:
-        Send, ^{ RButton }
+        Send, ^{ Click Right }
     return
 
     ;----------------------------------------------------------------------
@@ -400,14 +411,61 @@
     return
 
     ClickLoopSHIFT:
-        Send, +^{ LButton }
+        Send, +^{ Click Left }
     return
 
-    ;----------------------------------------------------------------------
-    ; MINE REDUX
-    ;----------------------------------------------------------------------
 
-    Numpad9:: ; Deactivate the loop when Numpad6 is pressed
+
+;----------------------------------------------------------------------
+; PAUSAR
+;----------------------------------------------------------------------
+
+    F8:: Suspend
+
+
+;----------------------------------------------------------------------
+; Weapon Swap (num pad 9)
+;----------------------------------------------------------------------
+Numpad9::
+    weaponSwapControl := !weaponSwapControl
+    if (!weaponSwapControl) {
+        ToolTip, Weapon Swap: Inactive
+    } else {
+        ToolTip, Weapon Swap: Active
+    }
+    SetTimer, RemoveToolTip, -2000
+return
+
+#If weaponSwapControl          ; ← this is the key part
+
+v::
+    if (weaponSwapRunning)
+        return
+
+    HoldRightClick := true
+    LastRightClick := A_TickCount
+    weaponSwapRunning := true
+
+    Send, b
+    Sleep, 400
+    Send, b
+    Sleep, 250
+    Send, q
+    Send, e
+
+    HoldRightClick := true
+    LastRightClick := A_TickCount
+    weaponSwapRunning := false
+return
+
+#If                            ; end conditional hotkeys
+
+	
+;----------------------------------------------------------------------
+; MINE REDUX (num pad *)
+;----------------------------------------------------------------------
+
+    NumpadMult:: ; Deactivate the loop when Numpad6 is pressed
         loopcontrol := not loopcontrol
         if not loopcontrol {
             ToolTip, Mine: Inactive
@@ -437,7 +495,7 @@
         if loopcontrol {
             loopstopper := false
             Send, { SPACE }
-            SetTimer, SendSpaceLoop, 15
+            SetTimer, SendSpaceLoop, 90
         }
     return
 
@@ -449,28 +507,3 @@
             loopstopper := true
         }
     return
-
-    ;----------------------------------------------------------------------
-    ; PAUSAR
-    ;----------------------------------------------------------------------
-
-    F5:: Suspend
-
-;----------------------------------------------------------------------
-; Smoke Mine REDUX
-;----------------------------------------------------------------------
-
-;~t::SmokeMine() ;
-
-;SmokeMine(){
-;if WinActive("Path of Exile")
-;		{
-;		Sleep 200
-;		Send, {space}
-;		Sleep 100
-;		Send, {space}
-;		Sleep 100
-;		Send, {space}
-;		return
-;		}
-;}
